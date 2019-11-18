@@ -23,53 +23,71 @@ class Meaning(object):
         Method to fetch word from the passed DOM
         :param container: Container DOM
         """
-        return self.container.find("div", class_="WI9k4c")\
-                             .find("span", attrs={"data-dobid": "hdw"})\
-                             .text
+        return self.container.find("div", class_="entryHead primary_homograph")\
+                   .header.h2.span.text.capitalize()
 
     def fetch_phonetic(self):
         """
         Method to fetch phonetic from the passed DOM
         :param container: Container DOM
         """
-        return self.container.find("div", class_="WI9k4c")\
-                             .find("div", class_="S23sjd")\
-                             .find("span").text
+        return self.container.find("section", class_="pronSection etym")\
+                             .div.span.text 
 
     def fetch_audio_link(self):
         """
         Method to fetch audio link from the passed DOM
         :param container: Container DOM
         """
-        return self.container.find("div", class_="gycwpf D5gqpe")\
-                             .find("source")\
-                             .attrs.get('src')
+        return self.container.find("section", class_="pronSection etym")\
+                             .div.a.audio.get("src") 
 
     def fetch_definitions(self):
         """
         Method to fetch the context of the word along with Definitions
         :param container: Container DOM
         """
-        contexts = []
-        for context in self.container.find("div", class_="vmod"):
-            if not context.find("div", class_="vmod"):
-                continue
-            definitions = []
-            context_title = context.find("div", class_="vpx4Fd")\
-                                   .find("div", class_="pgRvse vdBwhd")\
-                                   .find("i").text
-            list_items = context.find("div").find("ol").find_all("li")
-            for item in list_items:
-                container = item.find("div", class_="thODed Uekwlc XpoqFe")\
-                                .find("div", attrs={"jsname": "cJAsRb"})\
-                                .find("div", class_="QIclbb XpoqFe")
-                context_definition = container.find("div", attrs={"data-dobid": "dfn"}).text
-                context_example = container.find("div", class_="vk_gy").text
-                definitions.append({
-                    "definition": context_definition,
-                    "example": context_example
-                })
-            contexts.append({
-                context_title: definitions
+        # Fetching Part of Speech
+        part_of_speech = self.container.find("section", class_="gramb")\
+                                       .h3.span.text.capitalize()
+
+        # Fetchings Meanings List
+        meanings = []
+        meanings_list = self.container.find("section", class_="gramb")\
+                                      .find("ul", class_="semb")\
+                                      .find_all("li", recursive=False)
+        for meaning_dict in meanings_list:
+            parent_meaning_dict = meaning_dict.find("div", class_="trg")
+            
+            # Fetching Definition
+            definition = parent_meaning_dict.p.find("span", class_="ind").text
+            
+            # Fetching Examples
+            examples = []
+            examples_dict = parent_meaning_dict.find_all("div", class_="exg", recursive=False)
+            for example in examples_dict:
+                examples.append(example.div.em.text[1:-1].capitalize())
+            
+            # Fetching Synonyms
+            synonyms = []
+            try:
+                synonyms_dict = parent_meaning_dict.find("div", class_="synonyms")\
+                                                   .find("div", class_="exg")\
+                                                   .find_all("div", recursive=False)
+            except:
+                pass
+            else:
+                for synonym in synonyms_dict:
+                    try:
+                        synonyms.append(synonym.strong.text.capitalize())
+                        synonyms.extend([s.capitalize() for s in synonym.span.text[2:].split(", ")])
+                    except:
+                        continue
+
+            meanings.append({
+                "definition": definition,
+                "examples": examples,
+                "synonyms": synonyms
             })
-        return contexts
+
+        return meanings

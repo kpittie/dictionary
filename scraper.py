@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from parser import Meaning
 
 
-URL = "https://www.google.com/search?q={}"
+URL = "https://www.lexico.com/en/definition/{}"
 
 
 def fetch_content_from_web(word):
@@ -14,10 +14,7 @@ def fetch_content_from_web(word):
     """
     # TODO: Implement error handling here
     url_to_call = URL.format(word)
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 Safari/537.36"
-    }
-    response = requests.get(url_to_call, headers=headers)
+    response = requests.get(url_to_call)
     if response.status_code == 200:
         return response.text
     return {}
@@ -26,16 +23,13 @@ def fetch_meaning(entity):
     """
     Method to fetch the acttual meaning from the DOM tree
     """
-    response = []
-    for container in entity.find_all("div", class_="VpH2eb vmod XpoqFe"):
-        meaning = Meaning(container)
-        response.append({
-            "word": meaning.word,
-            "phonetic": meaning.phonetic,
-            "audio_link": meaning.audio_link,
-            "definitions": meaning.definitions
-        })
-    return response
+    meaning = Meaning(entity)
+    return {
+        "word": meaning.word,
+        "phonetic": meaning.phonetic,
+        "audio_link": meaning.audio_link,
+        "definitions": meaning.definitions
+    }
 
 def parse_html_content(raw_html_response):
     """
@@ -44,11 +38,11 @@ def parse_html_content(raw_html_response):
     :param raw_html_response: HTML response from GET call
     """
     soup = BeautifulSoup(raw_html_response, 'lxml')
-    top_level_entity = soup.find("div", class_="lr_container mod yc7KLc")
-    if not top_level_entity:
-        print("No Results from GOOGLE")
-        return {}
-    return fetch_meaning(top_level_entity)
+    primary_container = soup.find("div", class_="entryWrapper")
+    if not primary_container:
+        print("No results from LEXICO")
+        return
+    return fetch_meaning(primary_container)
 
 def scrape_meaning(word):
     """
@@ -57,8 +51,9 @@ def scrape_meaning(word):
     # TODO: Add validation checks on the word passed
     raw_html_response = fetch_content_from_web(word)
     response = parse_html_content(raw_html_response)
-    print(response)
     return response
 
 if __name__ == "__main__":
-    scrape_meaning("wasted")
+    print(scrape_meaning("wasted"))
+    print(scrape_meaning("discombobulated"))
+    print(scrape_meaning("miscreant"))
