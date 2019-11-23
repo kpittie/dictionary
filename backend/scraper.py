@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-from parser import Meaning
+from backend.parser import Meaning
 
 
 URL = "https://www.lexico.com/en/definition/{}"
