@@ -3,45 +3,63 @@
 
 <head>
     <title>Dictionary</title>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
-    <link href="style.css" rel="stylesheet">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
 </head>
 
 <body>
+    <!-- HEADING -->
     <div class="row no-gutters justify-content-center align-items-center">
 		<header id="page-title">
 			<h2>Dictionary</h2>
 		</header>
     </div>
+
+    <!-- CONTAINER ROW -->
 	<div class="row no-gutters flex-grow-1">
+
+        <!-- LEFT SIDE SEARCH PANE -->
 		<div class="col-md-6 no-gutters">
             <div class="leftside d-flex justify-content-center align-items-center">
-			    <form>
+			    <form action="{{ url_for('fetch_meaning') }}" method="post">
 			    	<input type="text" class="form-control" id="word" placeholder="Enter the word" name="word">
 			    	<button type="submit" class="btn btn-default" id="submit-button">Search</button>
 			    </form>
             </div>
 		</div>
+
+        <!-- RIGHT SIDE REULTS PANE -->
 		<div class="col-md-6 no-gutters">
             <div class="rightside d-flex flex-column justify-content-center align-items-center">
+            {% if response is defined %}
                 <article>
-                    <div> <h3> Word </h3> </div>
-                    <div> <h4> Phonetic </h4> </div>
-                    <div> <h4> Sound </h4> </div>
+                    <div> <h3> {{ response.word }} </h3> </div>
+                    <div> <h4> {{ response.phonetic }} </h4> </div>
+                    <div> <h4> {{ response.audio_link }} </h4> </div>
                     <div>
                         <ul>
-                            <li> Definition 1 </li>
+                            {% for definition in response.definitions %}
+                                <li> {{ definition.definition }} </li>
                                 <ol>
-                                    <li> Example 1 </li>
+                                    {% for example in definition.examples %}
+                                        <li> {{ example }} </li>
+                                    {% endfor %}
                                 </ol>
-                                <p> <i> Synonyms </i> </p>
+                                <p>
+                                    {% for synonym in definition.synonyms %}
+                                        <i> {{ synonym }} </i> 
+                                    {% endfor %}
+                                </p>
+                            {% endfor %}
                         </ul>
                     </div>
                 </article>
+		    {% endif %}
             </div>
 		</div>
+
 	</div>
 </body>
 

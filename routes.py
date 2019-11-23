@@ -1,12 +1,17 @@
-from flask import Flask
+from flask import Flask, render_template, request
 
 from backend.scraper import scrape_meaning
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates")
 
-@app.route("/fetch_meaning/<string:word>")
-def fetch_meaning(word):
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
+
+@app.route("/fetch_meaning", methods=["POST"])
+def fetch_meaning():
+    word = request.form["word"]
     meaning = scrape_meaning(word)
-    return meaning
+    return render_template("index.html", response=meaning)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0")
