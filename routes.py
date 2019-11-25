@@ -12,6 +12,3 @@ def fetch_meaning():
     word = request.form["word"]
     meaning = scrape_meaning(word)
     return render_template("index.html", response=meaning)
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0")
