@@ -24,7 +24,7 @@
 		<div class="col-md-6 no-gutters">
             <div class="leftside d-flex justify-content-center align-items-center">
 			    <form action="{{ url_for('fetch_meaning') }}" method="post">
-			    	<input type="text" class="form-control" id="word" placeholder="Enter the word" name="word">
+			    	<input type="text" class="form-control" id="word" placeholder={% if response is defined %}{{ response.word }}{% else %}"Enter the word"{% endif %} name="word" required autocomplete="off" autofocus pattern="^[A-Za-z ]*$">
 			    	<button type="submit" class="btn btn-default" id="submit-button">Search</button>
 			    </form>
             </div>
@@ -36,13 +36,16 @@
             {% if response is defined %}
                 <article>
                     <div> <h3> {{ response.word }} </h3> </div>
-                    <div> <h4> {{ response.phonetic }} </h4> </div>
-                    <div> <h4> {{ response.audio_link }} </h4> </div>
+                    <div class="d-flex justify-content-center"> 
+                        <audio id="player" src="{{ response.audio_link }}"></audio>
+                        <input src="{{ url_for('static', filename='phonetic.png') }}" type="image" id="phonetic_icon" alt="Phonetic" onclick="document.getElementById('player').play()">
+                        <h6> {{ response.phonetic }} </h6> 
+                    </div>
                     <div>
-                        <ul>
+                        <ul id="definition-list">
                             {% for definition in response.definitions %}
                                 <li> {{ definition.definition }} </li>
-                                <ol>
+                                <ol id="examples-list">
                                     {% for example in definition.examples %}
                                         <li> {{ example }} </li>
                                     {% endfor %}
